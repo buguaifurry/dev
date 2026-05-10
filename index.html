@@ -313,16 +313,10 @@
 <body>
 
 <script>
-const bgArr = [
-    "https://picsum.photos/id/1015/1920/1080",
-    "https://picsum.photos/id/1019/1920/1080",
-    "https://picsum.photos/id/1036/1920/1080",
-    "https://picsum.photos/id/1043/1920/1080",
-    "https://picsum.photos/id/1057/1920/1080"
-];
+// 固定使用你给的背景图，不再随机
+const bgUrl = "https://p5-ex-gddgtc-sign.douyinpic.com/tos-cn-i-0813c000-ce/oUFIAHYz5FDAdBDAETEDe4fCIAW6geLHJQmFX7~tplv-dy-aweme-images:q75.webp?lk3s=138a59ce&x-expires=1781042400&x-signature=wA8l4A6p7hR%2FDtXAzUp%2BsUYxpcc%3D&from=327834062&s=PackSourceEnum_SEARCH&se=false&sc=image&biz_tag=aweme_images&l=20260511063932EC50CF713D36D0FF21E9";
 
-document.body.style.backgroundImage =
-`url(${bgArr[Math.floor(Math.random()*bgArr.length)]})`;
+document.body.style.backgroundImage = `url(${bgUrl})`;
 </script>
 
 <!-- 左侧 -->
