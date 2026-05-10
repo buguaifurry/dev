@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Android17 3:7左右分屏 + 完整设置中心</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        droid: {
+                            primary: '#4285F4',
+                            card: 'rgba(255,255,255,0.08)',
+                            border: 'rgba(255,255,255,0.15)',
+                            text: '#F1F3F6',
+                            gray: '#9AA3B2'
+                        },
+                        doubao: {
+                            brand: '#7B61FF'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:system-ui,sans-serif;
+            min-height:100vh;
+            background-size:cover;
+            background-position:center;
+            background-attachment:fixed;
+            overflow-x:hidden;
+            padding-bottom:env(safe-area-inset-bottom);
+            background-color:#111827;
+        }
+
+        .ani{
+            transition:all .6s cubic-bezier(.4,0,.2,1);
+        }
+
+        .android-blur{
+            backdrop-filter:blur(28px) saturate(160%);
+            -webkit-backdrop-filter:blur(28px) saturate(160%);
+            background:rgba(255,255,255,.08);
+            border:1px solid rgba(255,255,255,.12);
+            border-radius:32px;
+            box-shadow:0 8px 40px rgba(0,0,0,.25);
+        }
+
+        .avatar-round{
+            border-radius:24px;
+            border:2px solid rgba(255,255,255,.25);
+            overflow:hidden;
+            position:relative;
+        }
+
+        .avatar-round::after{
+            content:'';
+            position:absolute;
+            inset:0;
+            border-radius:24px;
+            box-shadow:0 0 25px rgba(255,255,255,.2);
+            pointer-events:none;
+        }
+
+        .func-btn{
+            backdrop-filter:blur(20px);
+            background:rgba(255,255,255,.1);
+            border:1px solid rgba(255,255,255,.15);
+            border-radius:24px;
+            padding:18px 16px;
+            cursor:pointer;
+            transition:.3s;
+        }
+
+        .func-btn:hover{
+            background:rgba(255,255,255,.18);
+            transform:translateY(-3px);
+        }
+
+        .doubao-icon{
+            width:48px;
+            height:48px;
+            border-radius:14px;
+            background:linear-gradient(135deg,#7B61FF,#5A44E8);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#fff;
+            font-size:24px;
+        }
+
+        .video-container{
+            position:relative;
+            width:100%;
+            aspect-ratio:16/9;
+            border-radius:18px;
+            overflow:hidden;
+            background:rgba(0,0,0,.3);
+        }
+
+        .video-player{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+        }
+
+        .search-btn{
+            width:42px;
+            height:42px;
+            border:none;
+            border-radius:12px;
+            background:linear-gradient(135deg,#7B61FF,#5A44E8);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#fff;
+            cursor:pointer;
+            transition:.3s;
+        }
+
+        .search-btn:hover{
+            transform:scale(.95);
+        }
+
+        .video-input{
+            width:100%;
+            background:rgba(255,255,255,.1);
+            border:1px solid rgba(255,255,255,.15);
+            border-radius:12px;
+            padding:10px 14px;
+            color:#fff;
+            outline:none;
+            font-size:14px;
+        }
+
+        .video-input::placeholder{
+            color:#9AA3B2;
+        }
+
+        .setting-wrap{
+            width:100%;
+            height:100%;
+            overflow-y:auto;
+            padding:24px;
+            color:#fff;
+        }
+
+        .setting-item{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:16px 18px;
+            background:rgba(255,255,255,.06);
+            border-radius:16px;
+            margin-bottom:12px;
+            border:1px solid rgba(255,255,255,.1);
+        }
+
+        .setting-title{
+            font-size:15px;
+        }
+
+        .setting-desc{
+            font-size:12px;
+            color:#9AA3B2;
+            margin-top:2px;
+        }
+
+        .switch{
+            width:46px;
+            height:24px;
+            border-radius:30px;
+            background:rgba(255,255,255,.2);
+            position:relative;
+            cursor:pointer;
+            transition:.3s;
+        }
+
+        .switch.on{
+            background:#7B61FF;
+        }
+
+        .switch::after{
+            content:'';
+            position:absolute;
+            width:18px;
+            height:18px;
+            background:#fff;
+            border-radius:50%;
+            top:3px;
+            left:3px;
+            transition:.3s;
+        }
+
+        .switch.on::after{
+            left:25px;
+        }
+
+        @media (min-width:1024px){
+
+            #leftUi{
+                position:fixed;
+                top:0;
+                left:50%;
+                transform:translateX(-50%);
+                width:30%;
+                height:100vh;
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                justify-content:center;
+                z-index:10;
+            }
+
+            #leftUi.split-active{
+                left:0;
+                transform:none;
+            }
+
+            #rightDoubao{
+                position:fixed;
+                top:0;
+                left:30%;
+                width:70%;
+                height:100vh;
+                opacity:0;
+                pointer-events:none;
+                overflow:hidden;
+            }
+
+            #rightDoubao.split-active{
+                opacity:1;
+                pointer-events:auto;
+            }
+
+            .doubao-iframe{
+                width:100%;
+                height:100%;
+                border:none;
+                border-radius:24px;
+            }
+        }
+
+        @media (max-width:1023px){
+
+            body{
+                padding:16px;
+            }
+
+            #leftUi{
+                width:100%;
+            }
+
+            #rightDoubao{
+                width:100%;
+                height:65vh;
+                margin-top:20px;
+                display:none;
+                overflow:hidden;
+            }
+
+            #rightDoubao.split-active{
+                display:block;
+            }
+
+            .doubao-iframe{
+                width:100%;
+                height:100%;
+                border:none;
+                border-radius:24px;
+            }
+
+            .android-blur{
+                padding:20px !important;
+                border-radius:24px;
+            }
+
+            .avatar-round{
+                width:72px !important;
+                height:72px !important;
+            }
+
+            .setting-wrap{
+                padding:16px;
+            }
+        }
+
+        ::-webkit-scrollbar{
+            width:5px;
+        }
+
+        ::-webkit-scrollbar-thumb{
+            background:rgba(255,255,255,.25);
+            border-radius:20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<script>
+const bgArr = [
+    "https://picsum.photos/id/1015/1920/1080",
+    "https://picsum.photos/id/1019/1920/1080",
+    "https://picsum.photos/id/1036/1920/1080",
+    "https://picsum.photos/id/1043/1920/1080",
+    "https://picsum.photos/id/1057/1920/1080"
+];
+
+document.body.style.backgroundImage =
+`url(${bgArr[Math.floor(Math.random()*bgArr.length)]})`;
+</script>
+
+<!-- 左侧 -->
+<div id="leftUi" class="ani px-4">
+
+    <!-- 用户信息 -->
+    <div class="android-blur w-full max-w-md p-8 mb-6">
+
+        <div class="flex items-center gap-5">
+
+            <!-- 已替换头像 -->
+            <div class="w-20 h-20 avatar-round shadow-lg">
+                <img src="IMG_20260511_000405.jpg"
+                     class="w-full h-full object-cover">
+            </div>
+
+            <div>
+                <h2 class="text-droid-text text-xl font-medium">
+                    你的昵称
+                </h2>
+
+                <p class="text-droid-gray text-sm mt-1">
+                    AI爱好者 | Android17 UI
+                </p>
+
+                <div class="flex items-center gap-1 mt-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span class="text-xs text-droid-gray">
+                        在线可聊天
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-droid-gray text-sm mt-6 leading-relaxed">
+            初始居中，点击按钮推拉到最左，3:7左右分屏布局。
+        </p>
+
+        <div class="flex flex-wrap gap-2 mt-5">
+            <span class="px-3 py-1.5 text-xs bg-white/10 rounded-full text-white">
+                豆包AI
+            </span>
+
+            <span class="px-3 py-1.5 text-xs bg-white/10 rounded-full text-white">
+                3:7分屏
+            </span>
+        </div>
+    </div>
+
+    <!-- 第一排 -->
+    <div class="w-full max-w-md grid grid-cols-2 gap-4 mb-4">
+
+        <div id="doubaoBtn" class="func-btn flex items-center gap-4">
+
+            <div class="doubao-icon">
+                <i class="fa fa-comment"></i>
+            </div>
+
+            <div>
+                <div class="text-white font-medium">
+                    豆包AI
+                </div>
+
+                <div class="text-droid-gray text-xs mt-1">
+                    打开分屏
+                </div>
+            </div>
+        </div>
+
+        <div id="settingBtn" class="func-btn flex items-center gap-4">
+
+            <div class="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center text-white text-xl">
+                <i class="fa fa-cog"></i>
+            </div>
+
+            <div>
+                <div class="text-white font-medium">
+                    设置中心
+                </div>
+
+                <div class="text-droid-gray text-xs mt-1">
+                    系统配置
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二排 -->
+    <div class="w-full max-w-md grid grid-cols-2 gap-4 mb-6">
+
+        <div class="func-btn flex items-center gap-4">
+
+            <div class="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center text-white text-xl">
+                <i class="fa fa-info-circle"></i>
+            </div>
+
+            <div>
+                <div class="text-white font-medium">
+                    关于我们
+                </div>
+
+                <div class="text-droid-gray text-xs mt-1">
+                    版本信息
+                </div>
+            </div>
+        </div>
+
+        <div class="func-btn flex items-center gap-4">
+
+            <div class="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center text-white text-xl">
+                <i class="fa fa-share-alt"></i>
+            </div>
+
+            <div>
+                <div class="text-white font-medium">
+                    分享好友
+                </div>
+
+                <div class="text-droid-gray text-xs mt-1">
+                    快速分享
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 视频 -->
+    <div class="android-blur w-full max-w-md p-4 mb-6">
+
+        <div class="video-container mb-3">
+
+            <video id="videoPlayer"
+                   class="video-player"
+                   controls
+                   loop
+                   poster="https://picsum.photos/id/1048/800/450">
+
+                <source src="" type="video/mp4">
+
+            </video>
+        </div>
+
+        <div class="flex gap-2 items-center">
+
+            <input type="text"
+                   id="videoUrl"
+                   class="video-input"
+                   placeholder="输入视频链接">
+
+            <button class="search-btn" onclick="loadVideo()">
+                <i class="fa fa-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 右侧 -->
+<div id="rightDoubao" class="android-blur ani p-2">
+
+    <iframe id="doubaoIframe"
+            class="doubao-iframe hidden"
+            src="https://www.doubao.com/"
+            allow="microphone;camera">
+    </iframe>
+
+    <!-- 设置 -->
+    <div id="settingPage" class="setting-wrap hidden">
+
+        <h3 class="text-xl font-medium mb-6">
+            <i class="fa fa-cog mr-2"></i>
+            系统设置中心
+        </h3>
+
+        <div class="setting-item">
+            <div>
+                <div class="setting-title">深色主题</div>
+                <div class="setting-desc">切换全局主题</div>
+            </div>
+            <div class="switch"></div>
+        </div>
+
+        <div class="setting-item">
+            <div>
+                <div class="setting-title">磨砂玻璃效果</div>
+                <div class="setting-desc">开启模糊效果</div>
+            </div>
+            <div class="switch on"></div>
+        </div>
+
+        <div class="setting-item">
+            <div>
+                <div class="setting-title">随机背景</div>
+                <div class="setting-desc">自动随机切换壁纸</div>
+            </div>
+            <div class="switch on"></div>
+        </div>
+
+        <div class="setting-item"
+             onclick="resetConfig()"
+             style="cursor:pointer">
+
+            <div>
+                <div class="setting-title">
+                    重置配置
+                </div>
+
+                <div class="setting-desc">
+                    恢复默认设置
+                </div>
+            </div>
+
+            <div class="text-droid-gray">
+                <i class="fa fa-refresh"></i>
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <div>
+                <div class="setting-title">
+                    版本信息
+                </div>
+
+                <div class="setting-desc">
+                    Android17 UI V1.0
+                </div>
+            </div>
+
+            <div class="text-droid-gray">
+                2026.05.11
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const leftUi = document.getElementById('leftUi');
+const rightDoubao = document.getElementById('rightDoubao');
+const doubaoIframe = document.getElementById('doubaoIframe');
+const settingPage = document.getElementById('settingPage');
+
+function showDoubao(){
+    doubaoIframe.classList.remove('hidden');
+    settingPage.classList.add('hidden');
+
+    leftUi.classList.add('split-active');
+    rightDoubao.classList.add('split-active');
+}
+
+function showSetting(){
+    settingPage.classList.remove('hidden');
+    doubaoIframe.classList.add('hidden');
+
+    leftUi.classList.add('split-active');
+    rightDoubao.classList.add('split-active');
+}
+
+document.getElementById('doubaoBtn').onclick = showDoubao;
+document.getElementById('settingBtn').onclick = showSetting;
+
+document.querySelectorAll('.switch').forEach(sw=>{
+    sw.onclick = ()=>{
+        sw.classList.toggle('on');
+    }
+});
+
+function resetConfig(){
+    alert('已恢复默认配置');
+}
+
+function loadVideo(){
+
+    const url =
+    document.getElementById('videoUrl').value.trim();
+
+    const player =
+    document.getElementById('videoPlayer');
+
+    if(url){
+        player.src = url;
+        player.load();
+    }
+}
+</script>
+
+</body>
+</html>
