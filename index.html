@@ -3,94 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>阿布的资源下载网站</title>
+    <title>个人简介 | Personal Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,system-ui}
-        html,body{width:100%;min-height:100%;background:#f0f4f9;padding:0}
-        /* 导航栏收窄高度 */
-        .header{
-            width:100%;
-            background:linear-gradient(135deg,#3671e9,#2050c9);
-            padding:12px 24px;
-            display:flex;
-            align-items:center;
-            gap:16px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        /* 缩小头像尺寸 */
-        .avatar{
-            width:60px;
-            height:60px;
-            border-radius:50%;
-            object-fit:cover;
-            border:2px solid #fff;
-            box-shadow:0 2px 8px #0002;
+        body {
+            background-color: #f1f5f9;
+            color: #334155;
+            overflow-x: hidden;
         }
-        .header-text h1{
-            color:#fff;
-            font-size:22px;
+        /* 蜘蛛网画布铺满全屏背景 */
+        #netCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
         }
-        /* PC容器全屏拉伸 */
-        .container{
-            width:96%;
-            margin:30px auto;
-            background:#ffffff;
-            border-radius:14px;
-            box-shadow:0 3px 18px rgba(32,80,201,0.12);
-            padding:25px
+        .avatar-box {
+            padding: 3px;
+            background: #94a3b8;
+            border-radius: 50%;
         }
-        .file-item{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            padding:18px 12px;
-            border-bottom:1px solid #eee
+        .avatar {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #fff;
         }
-        .file-item:last-child{border-bottom:none}
-        .file-name{font-size:16px;color:#222}
-        .download-btn{
-            background:#3671e9;
-            color:#fff;
-            text-decoration:none;
-            padding:9px 22px;
-            border-radius:8px;
-            transition:0.2s
+        .info-card {
+            background: rgba(255,255,255,0.75);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
         }
-        .download-btn:hover{background:#2050c9}
-
-        /* 移动端 */
-        @media(max-width:768px){
-            .header{padding:10px 15px;gap:12px}
-            .avatar{width:48px;height:48px}
-            .header-text h1{font-size:18px}
-            .container{width:98%}
-            .file-item{flex-direction:column;gap:12px;align-items:flex-start}
+        .btn-item {
+            border: 1px solid #64748b;
+            color: #475569;
+            padding: 9px 22px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        .btn-item:hover {
+            background: #e2e8f0;
         }
     </style>
 </head>
-<body>
-    <div class="header">
-        <img class="avatar" src="IMG_20251109_114823.jpg" alt="头像">
-        <div class="header-text">
-            <h1>资源下载中心</h1>
+<body class="py-12 px-4">
+    <!-- 动态蜘蛛网背景 -->
+    <canvas id="netCanvas"></canvas>
+
+    <div class="max-w-[620px] mx-auto">
+        <!-- 头像标题 -->
+        <div class="flex flex-col items-center mb-10">
+            <div class="avatar-box mb-5">
+                <img src="IMG_20251109_114823.jpg" alt="头像/Avatar" class="avatar">
+            </div>
+            <h1 class="text-2xl text-slate-600 font-medium">个人简介 / Personal Introduction</h1>
+        </div>
+
+        <!-- 双语信息卡片 -->
+        <div class="info-card p-7 mb-8">
+            <div class="mb-5">
+                <p class="text-slate-500 mb-1">姓名 / Name</p>
+                <p class="text-slate-700">__________</p>
+            </div>
+            <div class="mb-5">
+                <p class="text-slate-500 mb-1">爱好 / Hobbies</p>
+                <p class="text-slate-700">生活、数码、学习 / Life, Digital, Study</p>
+            </div>
+            <div>
+                <p class="text-slate-500 mb-1">自我介绍 / About Me</p>
+                <p class="text-slate-700">踏实生活，持续丰富自身。<br>Live earnestly and keep improving myself.</p>
+            </div>
+        </div>
+
+        <!-- 简易按钮 -->
+        <div class="flex justify-center gap-5 flex-wrap">
+            <span class="btn-item cursor-pointer">联系方式 / Contact</span>
+            <span class="btn-item cursor-pointer">日常动态 / Moments</span>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="mt-14 text-center text-slate-400 text-sm">
+            <p>Personal Homepage © All Rights Reserved</p>
         </div>
     </div>
 
-    <div class="container" id="fileWrap"></div>
-
+    <!-- 蜘蛛网动态JS -->
     <script>
-        let fileData = [
-            // {name:"示例文件.zip",url:"示例文件.zip"}
-        ]
-        const wrap = document.getElementById('fileWrap')
-        fileData.forEach(file=>{
-            let dom = document.createElement('div')
-            dom.className = 'file-item'
-            dom.innerHTML = `
-                <span class="file-name">${file.name}</span>
-                <a href="${file.url}" download class="download-btn">下载</a>
-            `
-            wrap.appendChild(dom)
-        })
+        const canvas = document.getElementById('netCanvas');
+        const ctx = canvas.getContext('2d');
+        let w = canvas.width = innerWidth;
+        let h = canvas.height = innerHeight;
+        let dots = [];
+        const dotNum = 70;
+
+        // 生成点位
+        class Dot {
+            constructor() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.r = Math.random() + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.6;
+                this.speedY = (Math.random() - 0.5) * 0.6;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if(this.x < 0 || this.x > w) this.speedX *= -1;
+                if(this.y < 0 || this.y > h) this.speedY *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+                ctx.fillStyle = '#94a3b8';
+                ctx.fill();
+            }
+        }
+
+        // 初始化
+        for(let i=0;i<dotNum;i++) dots.push(new Dot())
+
+        // 连线绘制
+        function render(){
+            ctx.clearRect(0,0,w,h);
+            for(let i=0;i<dots.length;i++){
+                dots[i].update();
+                dots[i].draw();
+                for(let j=i+1;j<dots.length;j++){
+                    let dx = dots[i].x - dots[j].x;
+                    let dy = dots[i].y - dots[j].y;
+                    let dist = Math.sqrt(dx*dx+dy*dy);
+                    if(dist < 90){
+                        ctx.beginPath();
+                        ctx.moveTo(dots[i].x,dots[i].y);
+                        ctx.lineTo(dots[j].x,dots[j].y);
+                        ctx.strokeStyle = `rgba(148,163,184,${(90-dist)/250})`;
+                        ctx.lineWidth = 0.7;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(render);
+        }
+        render();
+
+        // 窗口重置
+        window.onresize = ()=>{
+            w = canvas.width = innerWidth;
+            h = canvas.height = innerHeight;
+        }
     </script>
 </body>
 </html>
